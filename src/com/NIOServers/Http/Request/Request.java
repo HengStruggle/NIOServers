@@ -10,8 +10,12 @@ import com.NIOServers.Http.Exception.IllegalRequestException;
 import com.NIOServers.util.BytesUtil;
 
 /**
- * Http请求
- *
+ * Http请求信息由3部分组成：
+ * <ul>
+ * <li>请求方法URI协议/版本
+ * <li>请求头
+ * <li>请求正文
+ * </ul>
  */
 public class Request {
 	
@@ -39,6 +43,7 @@ public class Request {
 		buffer.get(bytes);
 		
 		//找到两个\r\n同时出现的地方，即请求头部的尾端
+		//因为请求头和请求正文之间是一个空行，表示请求头已经结束
 		int position = BytesUtil.indexOf(bytes, "\r\n\r\n");
 		if(position == -1){
 			throw new IllegalRequestException("请求不合法");
@@ -48,11 +53,12 @@ public class Request {
 		RequestHeader requestHeader = new RequestHeader();
 		//解析头部数据
 		requestHeader.parseHeader(head);//会抛出IOException
-		
+		//根据contentLength的值继续读取数据
 		int contentLength = requestHeader.getContentLength();
 		buffer.position(position + 4);
 		ByteBuffer bodyBuffer = ByteBuffer.allocate(contentLength);
 		bodyBuffer.put(buffer);
+		//若有其他Buffer执行读取操作，则会阻塞，故需要循环判断
 		while(bodyBuffer.hasRemaining()){
 			channel.read(bodyBuffer);//抛出IOException
 		}

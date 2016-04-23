@@ -10,9 +10,14 @@ import java.util.logging.Logger;
 
 import com.NIOServers.util.BytesUtil;
 
+/**
+ * 请求正文
+ *
+ */
 class RequestBody {
 
 	private static Logger logger = Logger.getLogger("RequestBody");
+	
 	private Map<String , String > formMap;
 	private Map<String, MIMEData> mimeMap;
 	
@@ -28,7 +33,11 @@ class RequestBody {
 		Map<String , String> formMap = new HashMap<>();
 		
 		if(contentType.contains("application/x-www-form-urlencoded")){
-			 try{
+			/*
+			 * application/x-www-form-urlencoded 的内容是这样的
+			 *		one=23&two=123
+			 */
+			try{
 				 String bodyMsg = new String(body , "utf-8");
 				 Request.parseParameters(bodyMsg, formMap);
 			 }catch(UnsupportedEncodingException e){
@@ -61,6 +70,7 @@ class RequestBody {
 		byte[] curBody;
 		
 		do{
+			//multipart/form-data 的内容是这样的：
 			//  ------WebKitFormBoundaryIwVsTjLkjugAgonI
             //  Content-Disposition: form-data; name="photo"; filename="15-5.jpeg"
             //  Content-Type: image/jpeg
